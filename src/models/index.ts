@@ -115,3 +115,23 @@ export function getAdminModel(): AnyModel {
   );
   return mongoose.model("Admin", schema) as unknown as AnyModel;
 }
+
+/* ---------------- Email (SMTP) settings, singleton. Password is stored encrypted. ---------------- */
+export function getMailConfigModel(): AnyModel {
+  if (mongoose.models.MailConfig) return mongoose.models.MailConfig as AnyModel;
+  const schema = new Schema(
+    {
+      key: { type: String, default: "main", unique: true },
+      enabled: { type: Boolean, default: false },
+      smtpHost: { type: String, default: "smtp.gmail.com", trim: true },
+      smtpPort: { type: Number, default: 465 },
+      smtpUser: { type: String, trim: true },
+      smtpPassEnc: String,
+      fromName: { type: String, trim: true },
+      notifyTo: { type: String, trim: true },
+      sendConfirmation: { type: Boolean, default: true },
+    },
+    { timestamps: true }
+  );
+  return mongoose.model("MailConfig", schema) as unknown as AnyModel;
+}

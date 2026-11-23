@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { isEmail, sendInquiryEmails } from "@/lib/mailer";
 import { connectDB } from "@/lib/db";
 import { getInquiryModel } from "@/models";
 
@@ -20,18 +21,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Please enter a valid phone number" }, { status: 400 });
   }
 
+  const email = str(body.email, 160);
+  if (email && !isEmail(email)) {
+    return NextResponse.json({ error: "Please enter a valid email address" }, { status: 400 });
+  }
+
   const eventDate = str(body.eventDate, 30);
-  await connectDB();
-  await getInquiryModel().create({
+  const parsedDate = eventDate ? new Date(eventDate) : undefined;
+  const inquiry = {
     name,
     phone,
-    email: str(body.email, 160),
+    email,
     eventType: str(body.eventType, 60),
-    eventDate: eventDate ? new Date(eventDate) : undefined,
+    eventDate: parsedDate && !isNaN(parsedDate.getTime()) ? parsedDate : undefined,
     city: str(body.city, 80),
     budget: str(body.budget, 60),
     services: Array.isArray(body.services) ? body.services.map((s) => str(s, 60)).filter(Boolean).slice(0, 10) : [],
     message: str(body.message, 2000),
-  });
+  };
+  await connectDB();
+  await getInquiryModel().create(inquiry);
+
+  // Email the studio and the customer after the response is sent, so the form stays fast.
+  // Failures are logged inside sendInquiryEmails and never affect the saved enquiry.
+  after(() => sendInquiryEmails(inquiry));
   return NextResponse.json({ ok: true }, { status: 201 });
 }
