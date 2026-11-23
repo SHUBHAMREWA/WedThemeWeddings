@@ -18,6 +18,7 @@ import {
   Sparkles,
   Inbox,
   Mail,
+  Users,
   FolderOpen,
   X,
 } from "lucide-react";
@@ -34,6 +35,7 @@ const NAV = [
   { href: "/admin/brochures", label: "Brochures (PDF)", icon: FileText },
   { href: "/admin/media", label: "Media Library", icon: FolderOpen },
   { href: "/admin/email", label: "Email Notifications", icon: Mail },
+  { href: "/admin/admins", label: "Admins", icon: Users },
   { href: "/admin/settings", label: "Site Settings", icon: Settings },
 ];
 
